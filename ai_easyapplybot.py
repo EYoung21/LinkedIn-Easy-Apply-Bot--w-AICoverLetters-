@@ -84,7 +84,7 @@ class AIEasyApplyBot(EasyApplyBot):
                 return response.content[0].text
             elif self.ai_provider == 'gpt4':
                 response = self.ai_client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
                     max_tokens=1000
