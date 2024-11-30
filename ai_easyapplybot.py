@@ -1,6 +1,7 @@
 from easyapplybot import EasyApplyBot, log
 import os
-from openai import OpenAI
+from anthropic import Anthropic
+# from openai import OpenAI  # Uncomment for GPT-4
 from fpdf import FPDF
 import PyPDF2
 from pathlib import Path
@@ -10,10 +11,18 @@ from dotenv import load_dotenv
 
 class AIEasyApplyBot(EasyApplyBot):
     def __init__(self, *args, **kwargs):
+        # Load environment variables from .env file
         load_dotenv()
+        
         # Extract AI-specific parameters
         self.resume_path = kwargs.pop('resume_path')
-        self.openai_client = OpenAI()  # It will automatically look for OPENAI_API_KEY in environment
+        self.ai_provider = kwargs.pop('ai_provider', 'claude')  # Default to Claude
+        
+        # Initialize AI client based on provider
+        if self.ai_provider == 'claude':
+            self.ai_client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+        # elif self.ai_provider == 'gpt4':
+        #     self.ai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
         # Initialize resume text
         self.resume_text = self._extract_text_from_pdf(self.resume_path)
@@ -58,16 +67,31 @@ class AIEasyApplyBot(EasyApplyBot):
             5. Be 3-4 paragraphs long
             6. Follow standard business letter format
             7. Not exceed one page
+            
+            Generate only the cover letter content, with no additional commentary.
             """
 
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=1000
-            )
-            
-            return response.choices[0].message.content
+            if self.ai_provider == 'claude':
+                response = self.ai_client.messages.create(
+                    model="claude-3-opus-20240229",
+                    max_tokens=1000,
+                    temperature=0.7,
+                    messages=[{
+                        "role": "user",
+                        "content": prompt
+                    }]
+                )
+                return response.content[0].text
+                
+            # elif self.ai_provider == 'gpt4':
+            #     response = self.ai_client.chat.completions.create(
+            #         model="gpt-4",
+            #         messages=[{"role": "user", "content": prompt}],
+            #         temperature=0.7,
+            #         max_tokens=1000
+            #     )
+            #     return response.choices[0].message.content
+
         except Exception as e:
             log.error(f"Error generating cover letter: {str(e)}")
             return None
@@ -106,7 +130,7 @@ class AIEasyApplyBot(EasyApplyBot):
             return None
 
     def apply_to_job(self, jobID):
-        """Override the original apply_to_job method to include cover letter generation"""
+        """Apply to job with AI-generated cover letter"""
         try:
             # Get the job page
             self.get_job_page(jobID)
@@ -166,43 +190,21 @@ if __name__ == '__main__':
         except yaml.YAMLError as exc:
             raise exc
 
-    assert len(parameters['positions']) > 0
-    assert len(parameters['locations']) > 0
-    assert parameters['username'] is not None
-    assert parameters['password'] is not None
-    assert parameters['phone_number'] is not None
-    assert parameters.get('resume_path') is not None
-
-    if 'uploads' in parameters.keys() and type(parameters['uploads']) == list:
-        raise Exception("uploads read from the config file appear to be in list format" +
-                       " while should be dict. Try removing '-' from line containing" +
-                       " filename & path")
-
-    log.info({k: parameters[k] for k in parameters.keys() if k not in ['username', 'password']})
-
-    output_filename = [f for f in parameters.get('output_filename', ['output.csv']) if f is not None]
-    output_filename = output_filename[0] if len(output_filename) > 0 else 'output.csv'
-    blacklist = parameters.get('blacklist', [])
-    blackListTitles = parameters.get('blackListTitles', [])
-
-    uploads = {} if parameters.get('uploads', {}) is None else parameters.get('uploads', {})
-    for key in uploads.keys():
-        assert uploads[key] is not None
-
-    locations = [l for l in parameters['locations'] if l is not None]
-    positions = [p for p in parameters['positions'] if p is not None]
-
+    # Add AI provider to parameters if specified
+    ai_provider = parameters.get('ai_provider', 'claude')  # Default to Claude if not specified
+    
     bot = AIEasyApplyBot(
         username=parameters['username'],
         password=parameters['password'],
         phone_number=parameters['phone_number'],
         resume_path=parameters['resume_path'],
+        ai_provider=ai_provider,
         salary=parameters['salary'],
         rate=parameters['rate'],
-        uploads=uploads,
-        filename=output_filename,
-        blacklist=blacklist,
-        blackListTitles=blackListTitles,
+        uploads=parameters.get('uploads', {}),
+        filename=parameters.get('output_filename', 'output.csv'),
+        blacklist=parameters.get('blacklist', []),
+        blackListTitles=parameters.get('blackListTitles', []),
         experience_level=parameters.get('experience_level', [])
     )
-    bot.start_apply(positions, locations)
+    bot.start_apply(parameters['positions'], parameters['locations'])
