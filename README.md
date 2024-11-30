@@ -26,36 +26,43 @@ Copy
 Configuration
 Enter your details into the config.yaml file:
 ```
-yamlCopyusername: # Your LinkedIn email
-password: # Your LinkedIn password
-phone_number: # Your phone number
+# config.yaml
+username: example_user@email.com
+password: your_password
+phone_number: "1234567890"
+
+profile_path: '' # Can be left empty
 
 positions:
-- software engineering intern
-# Add more positions as needed
+  - software engineering intern
+
+ai_provider: claude # or 'gpt4' if you want to use GPT-4
 
 locations:
-- San Diego, California
-- Remote
-# Add more locations as needed
+  - Example City, State
+  - Remote
 
-salary: "60,000"  # Yearly salary requirement
-rate: 25  # Hourly rate requirement
-
-# Required for AI cover letter generation
-resume_path: "PATH/TO/YOUR/RESUME.pdf"
+salary: "60,000"
+rate: 25
 
 uploads:
-  Resume: "PATH/TO/YOUR/RESUME.pdf"
-  Cover Letter: "PATH/TO/YOUR/COVER_LETTER.pdf"  # Optional, bot will generate custom ones
+  Resume: C:\Users\User\Documents\Resume.pdf
+  Cover Letter: C:\Users\User\Documents\Cover Letter.pdf
+
+resume_path: C:\Users\User\Documents\Resume.pdf
+
+output_filename: output.csv
+
+# blacklist:
+#   - # Company names you want to ignore
 
 experience_level:
-  - 1  # Entry level
-  # - 2  # Associate
-  # - 3  # Mid-Senior level
-  # - 4  # Director
-  # - 5  # Executive
-  # - 6  # Internship
+  - 1 # Entry level
+  # - 2 # Associate
+  # - 3 # Mid-Senior level
+  # - 4 # Director
+  # - 5 # Executive
+  # - 6 # Internship
 ```
 Execute
 To run the AI-enhanced version:
