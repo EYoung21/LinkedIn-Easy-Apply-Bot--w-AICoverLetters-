@@ -18,11 +18,14 @@ To run the bot, first install all requirements:
 ```bash
 pip3 install -r requirements.txt
 pip3 install openai pypdf2 fpdf python-dotenv
+```
 OpenAI API Key
 Create a .env file in the root directory and add your OpenAI API key:
-CopyOPENAI_API_KEY=your-api-key-here
+Copy
+```OPENAI_API_KEY=your-api-key-here```
 Configuration
 Enter your details into the config.yaml file:
+```
 yamlCopyusername: # Your LinkedIn email
 password: # Your LinkedIn password
 phone_number: # Your phone number
@@ -53,11 +56,12 @@ experience_level:
   # - 4  # Director
   # - 5  # Executive
   # - 6  # Internship
+```
 Execute
 To run the AI-enhanced version:
-bashCopypython3 ai_easyapplybot.py
+bashCopy```python3 ai_easyapplybot.py```
 For the original version without AI features:
-bashCopypython3 easyapplybot.py
+bashCopy```python3 easyapplybot.py```
 Features
 
 All original features of the LinkedIn Easy Apply Bot
