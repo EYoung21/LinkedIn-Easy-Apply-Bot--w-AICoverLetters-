@@ -1,7 +1,7 @@
 from easyapplybot import EasyApplyBot, log
 import os
 from anthropic import Anthropic
-# from openai import OpenAI  # Uncomment for GPT-4
+from openai import OpenAI  # Uncomment for GPT-4
 from fpdf import FPDF
 import PyPDF2
 from pathlib import Path
@@ -16,13 +16,13 @@ class AIEasyApplyBot(EasyApplyBot):
         
         # Extract AI-specific parameters
         self.resume_path = kwargs.pop('resume_path')
-        self.ai_provider = kwargs.pop('ai_provider', 'claude')  # Default to Claude
+        self.ai_provider = kwargs.pop('ai_provider')  # Default to Claude
         
         # Initialize AI client based on provider
         if self.ai_provider == 'claude':
             self.ai_client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
-        # elif self.ai_provider == 'gpt4':
-        #     self.ai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        elif self.ai_provider == 'gpt4':
+            self.ai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
         # Initialize resume text
         self.resume_text = self._extract_text_from_pdf(self.resume_path)
@@ -82,15 +82,14 @@ class AIEasyApplyBot(EasyApplyBot):
                     }]
                 )
                 return response.content[0].text
-                
-            # elif self.ai_provider == 'gpt4':
-            #     response = self.ai_client.chat.completions.create(
-            #         model="gpt-4",
-            #         messages=[{"role": "user", "content": prompt}],
-            #         temperature=0.7,
-            #         max_tokens=1000
-            #     )
-            #     return response.choices[0].message.content
+            elif self.ai_provider == 'gpt4':
+                response = self.ai_client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7,
+                    max_tokens=1000
+                )
+                return response.choices[0].message.content
 
         except Exception as e:
             log.error(f"Error generating cover letter: {str(e)}")
