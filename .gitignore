@@ -148,3 +148,6 @@ venv8/
 quickstart.py
 states.json
 logs
+
+#env
+.env
