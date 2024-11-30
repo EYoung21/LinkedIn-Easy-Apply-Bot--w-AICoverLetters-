@@ -149,8 +149,5 @@ quickstart.py
 states.json
 logs
 
-#env
-.env
-
 #personal info
 config.yaml
